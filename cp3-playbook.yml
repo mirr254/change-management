@@ -1,0 +1,7 @@
+- hosts: all #all hosts ansible knows about #middle-tier #apply the contents of this playbook to all hosts matching the label
+  sudo : yes #run the tasks using sudo
+  tasks:
+    - name: Installing nginx
+      apt: name=nginx update_cache=yes
+    - name: starting nginx on boot
+      service: name=nginx enabled=yes state=started
