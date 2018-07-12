@@ -19,11 +19,16 @@
         }
     ],
     "provisioners": [
+        {
+            "type": "shell",
+            "script": "provision.sh"
+        },
        
         {
             "type": "ansible",
             "playbook_file": "./cp3-playbook.yml"
         }
+        
         
     ]
 }

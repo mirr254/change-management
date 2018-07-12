@@ -1,8 +1,7 @@
-- hosts: all #all hosts ansible knows about #middle-tier #apply the contents of this playbook to all hosts matching the label
+- hosts: all # all hosts ansible knows about #middle-tier #apply the contents of this playbook to all hosts matching the label
   become: yes  
   become_method: sudo
-  var: 
-    ansible_python_interpreter: "/usr/local/bin/python"
+  vars: 
     repository_url: https://github.com/mirr254/Bright-Events.git
     repository_path: /var/www/bright-events/
   tasks:
@@ -14,9 +13,10 @@
         - nginx
 
     - name: set and generate locale
-      locale_gen:
-        name: en_US.UTF-8
-        state: present
+      shell: | 
+        export LANGUAGE=en_US.UTF-8 
+        export LANG=en_US.UTF-8 
+        export LC_ALL=en_US.UTF-8 
 
     - name: starting nginx on boot
       service: 
@@ -48,41 +48,42 @@
         EOF'
         ln -s /etc/nginx/sites-available/api /etc/nginx/sites-enabled/
 
-    #use git to clone our repo in the dir we chose
-    - name: git clone the repo
-      git: repo='{{ repository_url }}' dest='{{ repository_path }}' 
-
-    - name: install virtualenv
-      command: pip3 install virtualenv
-
-    - name: create virtualenv in project dir path 
-      command: virtualenv '{{repository_path}/venv-api venv-api'
-
-    - name: activate virtualenv and install requirements
-      pip:
-        virtualenv: '{{repository_path}/venv-api'
-        requirements: '{{repository_path}}/Bright-Events/requirements.txt'
-
     #set up environment variables
     - name: set up environment variables
       shell:
         creates: .env
         cmd: |
           bash -c 'cat > /etc/profile.d/set_api_env_vars.sh << EOF
-            export APP_MAIL_PASSWORD='rqwglstgmuviflkw'
-            export APP_MAIL_USERNAME='sammysteppa90@gmail.com'
-            export APP_SETTINGS='production'
-            export SECRET_KEY='this is suoer scret key'
-            export SECURITY_PASSWORD_RESET_SALT='securiyt password r3set'
-            export SECURITY_PASSWORD_SALT='securiyt password s2lt'
-            export DATABASE_URL='postgresql://postgres:postgres@localhost:5433/bright-events'
-            export RDS_USERNAME='shammir_devops'
-            export RDS_PASSWORD='shammir_devops'
-            export RDS_HOSTNAME='brighteventsapi.clxcu0rn7s4l.us-east-2.rds.amazonaws.com'
-            export RDS_DB_NAME='brighteventsapi'
+            export APP_MAIL_PASSWORD=rqwglstgmuviflkw
+            export APP_MAIL_USERNAME=sammysteppa90@gmail.com
+            export APP_SETTINGS=production
+            export SECRET_KEY=this is suoer scret key
+            export SECURITY_PASSWORD_RESET_SALT=securiyt password r3set
+            export SECURITY_PASSWORD_SALT=securiyt password s2lt
+            export DATABASE_URL=postgresql://postgres:postgres@localhost:5433/bright-events
+            export RDS_USERNAME=shammir_devops
+            export RDS_PASSWORD=shammir_devops
+            export RDS_HOSTNAME=brighteventsapi.clxcu0rn7s4l.us-east-2.rds.amazonaws.com
+            export RDS_DB_NAME=brighteventsapi
             export RDS_PORT=5432
           EOF'
           chmod +x /etc/profile.d/set_api_env_vars.sh 
+
+    #use git to clone our repo in the dir we chose
+    - name: git clone the repo
+      git: repo='{{ repository_url }}' dest='{{ repository_path }}/Bright-Events' 
+
+    - name: install virtualenv
+      command: pip3 install virtualenv
+
+    - name: create virtualenv in project dir path 
+      command: virtualenv {{repository_path}}/venv-api
+
+    - name: activate virtualenv and install requirements
+      pip:
+        requirements: '{{repository_path}}/Bright-Events/requirements.txt'
+        virtualenv: '{{repository_path}}/venv-api'
+        
 
     - name: setting up database initialization, migration and upgrades
       shell: |
