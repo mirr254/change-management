@@ -3,8 +3,8 @@
     "builders": [
         {
             "type":"amazon-ebs",
-            "region": "us-west-2",
-            "source_ami": "ami-9abea4fb",
+            "region": "us-east-2",
+            "source_ami": "ami-a9a79fcc",
             "instance_type": "t2.micro",
             "ssh_username": "ubuntu",
             "ami_name" : "MiddleTier - {{isotime | clean_ami_name}}",
@@ -19,13 +19,11 @@
         }
     ],
     "provisioners": [
+       
         {
-            "type": "shell",
-            "script": "ansible.sh"
-        },
-        {
-            "type": "ansible-local",
+            "type": "ansible",
             "playbook_file": "./cp3-playbook.yml"
         }
+        
     ]
 }

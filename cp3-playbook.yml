@@ -1,7 +1,139 @@
+...
 - hosts: all #all hosts ansible knows about #middle-tier #apply the contents of this playbook to all hosts matching the label
-  sudo : yes #run the tasks using sudo
+  become: yes  
+  become_method: sudo
+  var: 
+    ansible_python_interpreter: "/usr/local/bin/python"
+    repository_url: https://github.com/mirr254/Bright-Events.git
+    repository_path: /var/www/bright-events/
   tasks:
-    - name: Installing nginx
-      apt: name=nginx update_cache=yes
+    - name: Installing packages
+      apt: update_cache=yes name={{ item }} state=present #tell apt to install a set of packages
+      with_items:
+        - git
+        - python3-pip
+        - nginx
+
+    tasks:
+    - name: set and generate locale
+      locale_gen:
+        name: en_US.UTF-8
+        state: present
+
     - name: starting nginx on boot
-      service: name=nginx enabled=yes state=started
+      service: 
+        name=nginx 
+        enabled=yes 
+        state=started
+
+    #remove the default nginx config file
+    - name: Removing default Nginx Sites Configuration
+      shell: |
+        rm -f /etc/nginx/sites-available/default
+        rm -f /etc/nginx/sites-enabled/default
+
+    - name: Adding app server site config to Nginx
+      shell: |
+        bash -c 'cat > /etc/nginx/sites-available/api << EOF
+          server {
+            listen 80 default_server;
+            listen [::]:80 default_server;
+            server_name _; 
+            location / {
+              proxy_pass http://127.0.0.1:8000;
+              proxy_set_header HOST \$host;
+              proxy_set_header X-Forwarded-Proto \$scheme;
+              proxy_set_header X-Real-IP \$remote_addr;
+              proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+            }
+          }
+        EOF'
+        ln -s /etc/nginx/sites-available/api /etc/nginx/sites-enabled/
+
+    #use git to clone our repo in the dir we chose
+    - name: git clone the repo
+      git: repo='{{ repository_url }}' dest='{{ repository_path }}' 
+
+    - name: install virtualenv
+      command: pip3 install virtualenv
+
+    - name: create virtualenv in project dir path 
+        command: virtualenv '{{repository_path}/venv-api venv-api'
+
+    - name: activate virtualenv and install requirements
+      pip:
+        virtualenv: '{{repository_path}/venv-api'
+        requirements: '{{repository_path}}/Bright-Events/requirements.txt'
+
+    #set up environment variables
+    - name: set up environment variables
+      shell:
+        creates: .env
+        cmd: |
+          bash -c 'cat > /etc/profile.d/set_api_env_vars.sh << EOF
+            export APP_MAIL_PASSWORD='rqwglstgmuviflkw'
+            export APP_MAIL_USERNAME='sammysteppa90@gmail.com'
+            export APP_SETTINGS='production'
+            export SECRET_KEY='this is suoer scret key'
+            export SECURITY_PASSWORD_RESET_SALT='securiyt password r3set'
+            export SECURITY_PASSWORD_SALT='securiyt password s2lt'
+            export DATABASE_URL='postgresql://postgres:postgres@localhost:5433/bright-events'
+            export RDS_USERNAME='shammir_devops'
+            export RDS_PASSWORD='shammir_devops'
+            export RDS_HOSTNAME='brighteventsapi.clxcu0rn7s4l.us-east-2.rds.amazonaws.com'
+            export RDS_DB_NAME='brighteventsapi'
+            export RDS_PORT=5432
+          EOF'
+          chmod +x /etc/profile.d/set_api_env_vars.sh 
+
+    - name: setting up database initialization, migration and upgrades
+      shell: |
+        bash -c 'cat > /home/ubuntu/stup_db.sh << EOF
+          #!/bin/bash
+          source /etc/profile.d/set_api_env_vars.sh
+          source /var/www/bright-events/venv-api/bin/activate
+          cd /var/www/bright-events/Bright-Events
+          if [[ -d ./migrations ]]; then
+            python manage.py db migrate
+            python manage.py db upgrade
+          else
+            python manage.py db init
+            python manage.py db migrate
+            python manage.py db upgrade
+          fi
+          deactivate
+        EOF'
+        bash -c 'cat > /etc/profile.d/stup_db.sh << EOF
+          sudo bash /home/ubuntu/stup_db.sh
+        EOF'
+        chmod +x /etc/profile.d/stup_db.sh
+        chmod +x /home/ubuntu/stup_db.sh
+
+    - name: Creating App api-launch Script
+      shell: |
+        bash -c 'cat > /home/ubuntu/api-launch.sh << EOF
+          source /etc/profile.d/set_api_env_vars.sh
+          source /var/www/bright-events/venv-api/bin/activate
+          gunicorn --chdir /var/www/bright-events/Bright-Events --bind 0.0.0.0:8000 run:app
+        EOF'
+        chmod 744 /home/ubuntu/api-launch.sh
+
+    - name: Creating App startup service
+        shell: |
+          bash -c 'cat > /etc/systemd/system/events_api.service <<EOF
+              [Unit]
+              Description=events_api startup service
+              After=network.target
+              [Service]
+              User=ubuntu
+              ExecStart=/bin/bash /home/ubuntu/api-launch.sh
+              [Install]
+              WantedBy=multi-user.target
+          EOF'
+          chmod 664 /etc/systemd/system/events_api.service
+    - name: Configuring service to run on reboot
+      service:
+        name: events_api
+        enabled: yes
+        state: started
+...
