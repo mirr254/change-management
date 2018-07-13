@@ -19,7 +19,11 @@ Next, unzip the downloaded package into a directory where Packer will be install
 After unzipping the package, the directory should contain a single binary program called packer. The final step to installation is to make sure the directory you installed Packer to is on the PATH. See [this page](https://stackoverflow.com/questions/14637979/how-to-permanently-set-path-on-linux) for instructions on setting the PATH on Linux and Mac. [ This page ](https://stackoverflow.com/questions/1618280/where-can-i-set-path-to-make-exe-on-windows) contains instructions for setting the PATH on Windows.
 
 To verify your installation, run  
-`$ packer` on your terminal and you should get   
+
+`$ packer`   
+
+on your terminal and you should get  
+
 `usage: packer [--version] [--help] <command> [<args>]`
 
 ## Configuring packer with aws keys.
@@ -27,16 +31,18 @@ To verify your installation, run
 There are different ways in setting the `aws secret keys` in packer. The default one being adding the keys in the directory `~/.aws/credentials` 
 Don't associate the credentials file with any extension. Put the keys as shown below.
 
-`[default]  
-    aws_access_key_id = AKIAJHY4AAEVG2HCDEIQ   
-    aws_secret_access_key = 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
-`
+`[default] `  
+    `aws_access_key_id = AKIAJHY4AAEVG2HCDEIQ`    
+    `aws_secret_access_key = 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`
+
 This repo makes use of this. The way it works is that when packer starts the build and doesn't come across these keys in the `.json` file, it looks for the keys in the default `~/.aws/credentials` file. 
- 
-The other way is to use environment variables.
 
+## Installing ansible
 
-The database used is an AWS RDS. this can be changed at any point. in the environment variables set in the file `cp3-playbook.yml`. The connection string has be broken down. For example `RDS_PORT`, `RDS_USERNAME`,`RDS_PORT` and so on.
+The preffered provisioner to use together with packer is ansible. To set up ansible checkout [ansible official docs](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
+
+The database used is an AWS RDS. this can be changed at any point. in the environment variables set in the file `cp3-playbook.yml`.   
+ The connection string has be broken down. For example `RDS_PORT`, `RDS_USERNAME`,`RDS_PORT` and so on.
 
 To use this script, `clone` the repo and change it to suite your needs.
 
