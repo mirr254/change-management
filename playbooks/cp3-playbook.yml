@@ -13,15 +13,15 @@
         - python3-pip
         - nginx
 
-    - name: set and generate locale
+    - name: set and generate locale #needed for ubuntu 16.0.4 server to work correctly when installing packages
       shell: | 
         export LANGUAGE=en_US.UTF-8 
         export LANG=en_US.UTF-8 
         export LC_ALL=en_US.UTF-8 
 
-    - name: starting nginx on boot
-      service: 
-        name=nginx 
+    - name: starting nginx on boot #start our Nginx server on book
+      service: #describe we are working with a service. name of the service and what to do on boot
+        name=nginx  
         enabled=yes 
         state=started
 
@@ -31,25 +31,23 @@
         rm -f /etc/nginx/sites-available/default
         rm -f /etc/nginx/sites-enabled/default
 
+    #add these configurations to the sites-avaialable file and the create 
+    # a symlink to the sites-enabled
     - name: Adding app server site config to Nginx
       shell: |
         bash -c 'cat > /etc/nginx/sites-available/api << EOF
           server {
-            listen 80 default_server;
-            listen [::]:80 default_server;
-            server_name _; 
+            listen 80;
+            server_name ;
             location / {
-              proxy_pass http://127.0.0.1:8000;
-              proxy_set_header HOST \$host;
-              proxy_set_header X-Forwarded-Proto \$scheme;
-              proxy_set_header X-Real-IP \$remote_addr;
-              proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                proxy_pass http://127.0.0.1:8000/;
             }
-          }
+        }
         EOF'
         ln -s /etc/nginx/sites-available/api /etc/nginx/sites-enabled/
 
-    #set up environment variables
+    #set up environment variables and make the file exutable
+    #files put in /etc/profile.d are executed when a user logs in
     - name: set up environment variables
       shell:
         creates: .env
@@ -74,6 +72,7 @@
     - name: git clone the repo
       git: repo='{{ repository_url }}' dest='{{ repository_path }}/Bright-Events' 
 
+    #run the command to install virtual environment
     - name: install virtualenv
       command: pip3 install virtualenv
 
@@ -85,7 +84,8 @@
         requirements: '{{repository_path}}/Bright-Events/requirements.txt'
         virtualenv: '{{repository_path}}/venv-api'
         
-
+    #create a script to handle database setup and configuration
+    # and make the file executable
     - name: setting up database initialization, migration and upgrades
       shell: |
         bash -c 'cat > /home/ubuntu/stup_db.sh << EOF
