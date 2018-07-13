@@ -32,8 +32,8 @@ There are different ways in setting the `aws secret keys` in packer. The default
 Don't associate the credentials file with any extension. Put the keys as shown below.
 
 `[default] `  
-    `aws_access_key_id = AKIAJHY4AAEVG2HCDEIQ`    
-    `aws_secret_access_key = 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`
+    `aws_access_key_id = AKIAJHY4A`    
+    `aws_secret_access_key = 4FM15/Ez73GGRFXWZsFoW`
 
 This repo makes use of this. The way it works is that when packer starts the build and doesn't come across these keys in the `.json` file, it looks for the keys in the default `~/.aws/credentials` file. 
 
