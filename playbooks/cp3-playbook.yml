@@ -19,37 +19,8 @@
         export LANG=en_US.UTF-8 
         export LC_ALL=en_US.UTF-8 
 
-    - name: starting nginx on boot #start our Nginx server on book
-      service: #describe we are working with a service. name of the service and what to do on boot
-        name=nginx  
-        enabled=yes 
-        state=started
 
-    #remove the default nginx config file
-    - name: Removing default Nginx Sites Configuration
-      shell: |
-        rm -f /etc/nginx/sites-available/default
-        rm -f /etc/nginx/sites-enabled/default
-
-    #add these configurations to the sites-avaialable file and the create 
-    # a symlink to the sites-enabled
-    - name: Adding app server site config to Nginx
-      shell: |
-        bash -c 'cat > /etc/nginx/sites-available/default << EOF
-          server {
-            listen 80 default_server;
-            listen [::]:80 default_server;
-            server_name _;
-            location / {
-              proxy_pass http://127.0.0.1:8000;
-              proxy_set_header HOST \$host;
-              proxy_set_header X-Forwarded-Proto \$scheme;
-              proxy_set_header X-Real-IP \$remote_addr;
-              proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-            }
-          }
-        EOF'
-        ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
+    #nginx role here
 
     #set up environment variables and make the file exutable
     #files put in /etc/profile.d are executed when a user logs in
@@ -113,31 +84,3 @@
         EOF'
         chmod +x /etc/profile.d/stup_db.sh
         chmod +x /home/ubuntu/stup_db.sh
-
-    - name: Creating App api-launch Script
-      shell: |
-        bash -c 'cat > /home/ubuntu/api-launch.sh << EOF
-          source /etc/profile.d/set_api_env_vars.sh
-          source /var/www/bright-events/venv-api/bin/activate
-          gunicorn --chdir /var/www/bright-events/Bright-Events --bind 0.0.0.0:8000 run:app
-        EOF'
-        chmod 744 /home/ubuntu/api-launch.sh
-
-    - name: Creating App startup service
-      shell: |
-          bash -c 'cat > /etc/systemd/system/events_api.service <<EOF
-              [Unit]
-              Description=events_api startup service
-              After=network.target
-              [Service]
-              User=ubuntu
-              ExecStart=/bin/bash /home/ubuntu/api-launch.sh
-              [Install]
-              WantedBy=multi-user.target
-          EOF'
-          chmod 664 /etc/systemd/system/events_api.service
-    - name: Configuring service to run on reboot
-      service:
-        name: events_api
-        enabled: yes
-        state: started

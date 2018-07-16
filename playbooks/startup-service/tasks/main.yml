@@ -1,0 +1,22 @@
+    - name: Creating App api-launch Script
+      shell: |
+        bash -c 'cat > /home/ubuntu/api-launch.sh << EOF
+          source /etc/profile.d/set_api_env_vars.sh
+          source /var/www/bright-events/venv-api/bin/activate
+          gunicorn --chdir /var/www/bright-events/Bright-Events --bind 0.0.0.0:8000 run:app
+        EOF'
+        chmod 744 /home/ubuntu/api-launch.sh
+
+    - name: Creating App startup service
+      shell: |
+          bash -c 'cat > /etc/systemd/system/events_api.service <<EOF
+              [Unit]
+              Description=events_api startup service
+              After=network.target
+              [Service]
+              User=ubuntu
+              ExecStart=/bin/bash /home/ubuntu/api-launch.sh
+              [Install]
+              WantedBy=multi-user.target
+          EOF'
+          chmod 664 /etc/systemd/system/events_api.service

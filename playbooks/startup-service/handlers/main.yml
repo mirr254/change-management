@@ -1,0 +1,7 @@
+#this handler configures our start up script to start on boot.
+#the startup script is supposed to start our application after the the server servers
+- name: Configuring service to run on reboot
+  service:
+    name: events_api
+    enabled: yes
+    state: started
