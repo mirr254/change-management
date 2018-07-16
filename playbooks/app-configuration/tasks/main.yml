@@ -1,0 +1,15 @@
+#use git to clone our repo in the dir we chose
+- name: git clone the repo
+  git: repo='{{ repository_url }}' dest='{{ repository_path }}/Bright-Events' 
+
+#run the command to install virtual environment
+- name: install virtualenv
+  command: pip3 install virtualenv
+
+- name: create virtualenv in project dir path 
+  command: virtualenv {{repository_path}}/venv-api
+
+- name: activate virtualenv and install requirements
+  pip:
+    requirements: '{{repository_path}}/Bright-Events/requirements.txt'
+    virtualenv: '{{repository_path}}/venv-api'

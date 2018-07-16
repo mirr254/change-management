@@ -1,0 +1,3 @@
+#contains variables to be used by the app configuration role
+repository_url: https://github.com/mirr254/Bright-Events.git
+repository_path: /var/www/bright-events/

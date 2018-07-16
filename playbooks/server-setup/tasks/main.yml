@@ -1,0 +1,36 @@
+#this task sets up the server environment by installing the required packages
+#
+- name: Installing packages
+  apt: update_cache=yes name={{ item }} state=present #tell apt to install a set of packages
+  with_items:
+    - git
+    - python3-pip
+    - nginx
+
+- name: set and generate locale #needed for ubuntu 16.0.4 server to work correctly when installing packages
+  shell: | 
+    export LANGUAGE=en_US.UTF-8 
+    export LANG=en_US.UTF-8 
+    export LC_ALL=en_US.UTF-8 
+
+  #set up environment variables and make the file exutable
+    #files put in /etc/profile.d are executed when a user logs in
+- name: set up environment variables
+  shell:
+    creates: .env
+    cmd: |
+      bash -c 'cat > /etc/profile.d/set_api_env_vars.sh << EOF
+        export APP_MAIL_PASSWORD=rqwglstgmuviflkw
+        export APP_MAIL_USERNAME=sammysteppa90@gmail.com
+        export APP_SETTINGS=production
+        export SECRET_KEY=this is suoer scret key
+        export SECURITY_PASSWORD_RESET_SALT=securiyt password r3set
+        export SECURITY_PASSWORD_SALT=securiyt password s2lt
+        export DATABASE_URL=postgresql://postgres:postgres@localhost:5433/bright-events
+        export RDS_USERNAME=shammir_devops
+        export RDS_PASSWORD=shammir_devops
+        export RDS_HOSTNAME=brighteventsapi.clxcu0rn7s4l.us-east-2.rds.amazonaws.com
+        export RDS_DB_NAME=brighteventsapi
+        export RDS_PORT=5432
+      EOF'
+      chmod +x /etc/profile.d/set_api_env_vars.sh 

@@ -1,0 +1,25 @@
+ #create a script to handle database setup and configuration
+# and make the file executable
+#file stored in dir profile.d/ to make sure it's executable when a user logs in
+- name: setting up database initialization, migration and upgrades
+  shell: |
+    bash -c 'cat > /home/ubuntu/stup_db.sh << EOF
+      #!/bin/bash
+      source /etc/profile.d/set_api_env_vars.sh
+      source /var/www/bright-events/venv-api/bin/activate
+      cd /var/www/bright-events/Bright-Events
+      if [[ -d ./migrations ]]; then
+        python manage.py db migrate
+        python manage.py db upgrade
+      else
+        python manage.py db init
+        python manage.py db migrate
+        python manage.py db upgrade
+      fi
+      deactivate
+    EOF'
+    bash -c 'cat > /etc/profile.d/stup_db.sh << EOF
+      sudo bash /home/ubuntu/stup_db.sh
+    EOF'
+    chmod +x /etc/profile.d/stup_db.sh
+    chmod +x /home/ubuntu/stup_db.sh
