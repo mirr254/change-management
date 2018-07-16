@@ -6,7 +6,12 @@
     repository_url: https://github.com/mirr254/Bright-Events.git
     repository_path: /var/www/bright-events/
   roles:
-    - role: server-setup 
+    - server-setup
+    - nginx
+    - db-setup
+    - app-configuration
+    - startup-service
+
 
 
   
