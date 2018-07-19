@@ -12,3 +12,8 @@
         }
       }
     EOF'
+
+- name: restart nginx server
+  command: sudo service nginx restart
+
+  

@@ -1,3 +1,9 @@
 #use git to clone the repo to our desired destination
 - name: Clone the repo to the desired destination
   git: repo={{repository_url}} dest={{ repository_path }}/bright-events-reactJs
+
+- name: start the application
+  shell: |
+    cd {{ repository_path }}/bright-events-reactJs
+    sudo yarn
+    sudo yarn build
