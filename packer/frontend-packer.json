@@ -7,10 +7,10 @@
             "source_ami": "ami-a9a79fcc",
             "instance_type": "t2.micro",
             "ssh_username": "ubuntu",
-            "ami_name" : "MiddleTier - {{isotime | clean_ami_name}}",
+            "ami_name" : "Frontend - {{isotime | clean_ami_name}}",
             "ami_description" : "AMI for python flask API",
             "tags" : {
-                "role": "MiddleTier"
+                "role": "Frontend"
             },
             "run_tags": {
                 "role": "buildSystem"
