@@ -1,0 +1,20 @@
+#this task sets up the server by updating packages and installing neccesary packages
+- name: Install packages
+  apt: update_cache=yes name={{ item }} state=present #install the packages if they don't exist
+  with_items:
+    - git
+    - nginx
+
+- name: Install nodejs
+  shell: |
+    curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+    sudo apt-get install -y nodejs
+
+- name: install yarn
+  command: npm install -g yarn
+
+- name: set and generate locale #neccessary for ubuntu to install and update other packages
+  shell: |
+    export LANGUAGE=en_US.UTF-8
+    export LANG=en_US.UTF-8
+    export LC_ALL=en_US.UTF-8
