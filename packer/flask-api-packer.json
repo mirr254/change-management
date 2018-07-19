@@ -21,7 +21,7 @@
     "provisioners": [
         {
             "type": "ansible",
-            "playbook_file": "../playbooks/cp3-playbook.yml"
+            "playbook_file": "../playbooks/api_playbook/cp3-playbook.yml"
         }
         
         
