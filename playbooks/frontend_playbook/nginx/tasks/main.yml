@@ -4,16 +4,14 @@
     bash -c 'cat > /etc/nginx/sites-available/default << EOF
       server {
         listen 80 default_server;
-        root /var/www/bright-events-reactJs/build
-        server_name ;
-        index index.html index.htm;
+        listen [::]:80 default_server;
+        server_name _;
         location / {
-
+          proxy_pass http://127.0.0.1:3000;
+          proxy_set_header HOST \$host;
+          proxy_set_header X-Forwarded-Proto \$scheme;
+          proxy_set_header X-Real-IP \$remote_addr;
+          proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         }
       }
     EOF'
-
-- name: restart nginx server
-  command: sudo service nginx restart
-
-  

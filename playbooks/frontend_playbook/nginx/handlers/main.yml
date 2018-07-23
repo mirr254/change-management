@@ -1,0 +1,5 @@
+- name: restart nginx server
+  service: #describe we are working with a service. name of the service and what to do on boot
+    name=nginx
+    enabled=yes
+    state=started
