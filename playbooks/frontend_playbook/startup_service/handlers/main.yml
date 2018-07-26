@@ -1,0 +1,5 @@
+- name: Configuring the service to start on boot
+  service:
+    name: frontend_app
+    enabled: yes
+    state: started

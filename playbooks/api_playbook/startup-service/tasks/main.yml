@@ -7,7 +7,7 @@
         EOF'
         chmod 744 /home/ubuntu/api-launch.sh
 
-    - name: Creating App startup service
+    - name: Creating App startup service 
       shell: |
           bash -c 'cat > /etc/systemd/system/events_api.service <<EOF
               [Unit]

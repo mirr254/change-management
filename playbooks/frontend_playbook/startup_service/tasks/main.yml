@@ -1,0 +1,29 @@
+- name: Creating an app start up script
+  shell: |
+    bash -c 'cat > /home/ubuntu/app-launch.sh << EOF
+      cd /var/www/bright-events-reactJs
+      npm start
+    EOF'
+    chmod 755 /home/ubuntu/app-launch.sh
+
+- name: Creating app start up service
+  shell: |
+    bash -c 'cat > /etc/systemd/system/frontend_app.service << EOF
+      [Unit]
+      Description=frontend setart up service
+      After=network.target
+      [Service]
+      User=ubuntu
+      ExecStart=/bin/bash /home/ubuntu/app-launch.sh
+      Restart=always
+      [Install]
+      WantedBy=multi-user.target
+    EOF'
+    chmod 755 /etc/systemd/system/frontend_app.service
+    
+
+- name: Configuring the service to start on boot
+  service:
+    name: frontend_app
+    enabled: yes
+    state: started

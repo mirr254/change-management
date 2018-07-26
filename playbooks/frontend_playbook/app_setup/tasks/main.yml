@@ -11,10 +11,3 @@
   shell:
     chdir: /var/www/bright-events-reactJs
     cmd: yarn install
-
-- name: Running app in the background
-  shell:
-    chdir: /var/www/bright-events-reactJs
-    cmd: pm2 start npm -- start
-      
-        

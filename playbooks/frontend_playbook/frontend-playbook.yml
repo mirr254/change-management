@@ -7,3 +7,4 @@
     - server-setup
     - nginx
     - app_setup
+    - startup_service
